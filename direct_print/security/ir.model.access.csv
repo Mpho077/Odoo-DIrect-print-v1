@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_direct_print_printer,Direct Print Printer,model_direct_print_printer,base.group_user,1,1,1,1
+access_direct_print_wizard,Direct Print Wizard,model_direct_print_wizard,base.group_user,1,1,1,0
+access_direct_print_user_default,Direct Print User Default,model_direct_print_user_default,base.group_user,1,1,1,1

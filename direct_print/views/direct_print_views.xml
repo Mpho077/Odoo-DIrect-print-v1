@@ -1,0 +1,179 @@
+<odoo>
+    <record id="view_direct_print_printer_list" model="ir.ui.view">
+        <field name="name">direct.print.printer.list</field>
+        <field name="model">direct.print.printer</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="ip"/>
+                <field name="port"/>
+                <field name="protocol"/>
+                <field name="last_test_result"/>
+                <field name="last_test_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_direct_print_printer_form" model="ir.ui.view">
+        <field name="name">direct.print.printer.form</field>
+        <field name="model">direct.print.printer</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_test_connection" string="Test Connection" type="object" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="ip"/>
+                            <field name="port"/>
+                            <field name="protocol"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="last_test_result"/>
+                            <field name="last_test_date"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <field name="note" nolabel="1" placeholder="Additional notes about this printer..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_direct_print_printer" model="ir.actions.act_window">
+        <field name="name">Printers</field>
+        <field name="res_model">direct.print.printer</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- User Default Printer Views -->
+    <record id="view_direct_print_user_default_list" model="ir.ui.view">
+        <field name="name">direct.print.user.default.list</field>
+        <field name="model">direct.print.user.default</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="user_id"/>
+                <field name="printer_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_direct_print_user_default_form" model="ir.ui.view">
+        <field name="name">direct.print.user.default.form</field>
+        <field name="model">direct.print.user.default</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="user_id"/>
+                        <field name="printer_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_direct_print_user_default" model="ir.actions.act_window">
+        <field name="name">User Defaults</field>
+        <field name="res_model">direct.print.user.default</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Set default printers for users
+            </p>
+            <p>
+                Assign a default printer to each user. When printing, the user's default printer will be pre-selected.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_direct_print_root" name="Direct Print" sequence="90"/>
+    <menuitem id="menu_direct_print_printers" name="Printers" parent="menu_direct_print_root" action="action_direct_print_printer"/>
+    <menuitem id="menu_direct_print_user_defaults" name="User Defaults" parent="menu_direct_print_root" action="action_direct_print_user_default"/>
+    
+    <!-- Configuration submenu -->
+    <menuitem id="menu_direct_print_config" name="Configuration" parent="menu_direct_print_root" sequence="99"/>
+    
+    <!-- Action to create Direct Print buttons for installed modules -->
+    <record id="action_create_print_actions" model="ir.actions.server">
+        <field name="name">Create Direct Print Actions</field>
+        <field name="model_id" ref="model_direct_print_printer"/>
+        <field name="state">code</field>
+        <field name="code">
+action = env['direct.print.printer'].action_create_print_actions()
+        </field>
+    </record>
+    
+    <menuitem id="menu_create_print_actions" name="Create Print Actions" parent="menu_direct_print_config" action="action_create_print_actions"/>
+
+    <!-- Wizard view -->
+    <record id="view_direct_print_wizard_form" model="ir.ui.view">
+        <field name="name">direct.print.wizard.form</field>
+        <field name="model">direct.print.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Print Document">
+                <group>
+                    <field name="model" invisible="1"/>
+                    <field name="report_id" options="{'no_create': True}"/>
+                    <field name="printer_id" options="{'no_create': True}"/>
+                    <field name="remember_printer"/>
+                    <field name="report_ref" invisible="1"/>
+                    <field name="res_ids" invisible="1"/>
+                </group>
+                <footer>
+                    <button string="Print" type="object" name="action_print_direct" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_direct_print_wizard" model="ir.actions.act_window">
+        <field name="name">Direct Print</field>
+        <field name="res_model">direct.print.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_direct_print_wizard_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Add Direct Print option to Reports configuration -->
+    <record id="view_ir_actions_report_form_direct_print" model="ir.ui.view">
+        <field name="name">ir.actions.report.form.direct_print</field>
+        <field name="model">ir.actions.report</field>
+        <field name="inherit_id" ref="base.act_report_xml_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='print_report_name']" position="after">
+                <field name="use_direct_print"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Server Action for Direct Print on res.partner -->
+    <record id="action_direct_print_partner" model="ir.actions.server">
+        <field name="name">Direct Print</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = {
+        'name': 'Direct Print',
+        'type': 'ir.actions.act_window',
+        'res_model': 'direct.print.wizard',
+        'view_mode': 'form',
+        'target': 'new',
+        'context': {
+            'default_model': records._name,
+            'active_model': records._name,
+            'active_ids': records.ids,
+            'active_id': records.ids[0] if records.ids else False,
+        },
+    }
+        </field>
+    </record>
+</odoo>
