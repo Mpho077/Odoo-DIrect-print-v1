@@ -1,0 +1,158 @@
+<odoo>
+
+    <!-- ── Print Wizard ────────────────────────────────────────────── -->
+    <record id="view_direct_print_wizard_form" model="ir.ui.view">
+        <field name="name">direct.print.wizard.form</field>
+        <field name="model">direct.print.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Direct Print">
+                <group>
+                    <field name="model" invisible="1"/>
+                    <field name="report_ref" invisible="1"/>
+                    <field name="res_ids" invisible="1"/>
+                    <field name="report_id" options="{'no_create': True}"/>
+                    <field name="record_count" string="Records selected"/>
+                </group>
+                <div class="alert alert-info" role="alert">
+                    <strong>How it works:</strong> Click <em>Print</em> and your
+                    browser's native print dialog will open so you can choose any
+                    printer connected to your computer (USB, network, or virtual).
+                </div>
+                <footer>
+                    <button string="Print" type="object" name="action_print" class="btn-primary" icon="fa-print"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_direct_print_wizard" model="ir.actions.act_window">
+        <field name="name">Direct Print</field>
+        <field name="res_model">direct.print.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_direct_print_wizard_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <!-- ── Add "Use Direct Print" on report configuration ──────── -->
+    <record id="view_ir_actions_report_form_direct_print" model="ir.ui.view">
+        <field name="name">ir.actions.report.form.direct_print</field>
+        <field name="model">ir.actions.report</field>
+        <field name="inherit_id" ref="base.act_report_xml_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='print_report_name']" position="after">
+                <field name="use_direct_print"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ── Menu ────────────────────────────────────────────────────── -->
+    <menuitem id="menu_direct_print_root" name="Direct Print" sequence="90"/>
+    <menuitem id="menu_direct_print_config" name="Configuration" parent="menu_direct_print_root" sequence="10"/>
+
+    <!-- Server Action: manually (re-)create binding actions -->
+    <record id="action_create_print_actions" model="ir.actions.server">
+        <field name="name">Create / Repair Print Actions</field>
+        <field name="model_id" ref="model_direct_print_action"/>
+        <field name="state">code</field>
+        <field name="code">
+action = env['direct.print.action'].action_create_print_actions()
+        </field>
+    </record>
+
+    <menuitem id="menu_create_print_actions" name="Create / Repair Print Actions"
+              parent="menu_direct_print_config" action="action_create_print_actions"/>
+
+    <!-- ── Binding action for res.partner (always available) ───── -->
+    <record id="action_direct_print_partner" model="ir.actions.server">
+        <field name="name">Direct Print</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = {
+        'name': 'Direct Print',
+        'type': 'ir.actions.act_window',
+        'res_model': 'direct.print.wizard',
+        'view_mode': 'form',
+        'target': 'new',
+        'context': {
+            'default_model': records._name,
+            'active_model': records._name,
+            'active_ids': records.ids,
+            'active_id': records.ids[0] if records.ids else False,
+        },
+    }
+        </field>
+    </record>
+
+    <!-- ── Direct Print button on Invoice / Bill form ──────────── -->
+    <record id="view_move_form_direct_print" model="ir.ui.view">
+        <field name="name">account.move.form.direct_print</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='button_draft']" position="after">
+                <button name="%(action_direct_print_wizard)d"
+                        string="Direct Print"
+                        type="action"
+                        class="btn-secondary"
+                        icon="fa-print"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ── Direct Print button on Sale Order form ───────────────── -->
+    <record id="view_sale_order_form_direct_print" model="ir.ui.view">
+        <field name="name">sale.order.form.direct_print</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_draft']" position="after">
+                <button name="%(action_direct_print_wizard)d"
+                        string="Direct Print"
+                        type="action"
+                        class="btn-secondary"
+                        icon="fa-print"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ── Direct Print button on Purchase Order form ──────────── -->
+    <record id="view_purchase_order_form_direct_print" model="ir.ui.view">
+        <field name="name">purchase.order.form.direct_print</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='button_cancel']" position="after">
+                <button name="%(action_direct_print_wizard)d"
+                        string="Direct Print"
+                        type="action"
+                        class="btn-secondary"
+                        icon="fa-print"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ── Direct Print button on Stock Picking (Transfers) form ── -->
+    <record id="view_picking_form_direct_print" model="ir.ui.view">
+        <field name="name">stock.picking.form.direct_print</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_cancel']" position="after">
+                <button name="%(action_direct_print_wizard)d"
+                        string="Direct Print"
+                        type="action"
+                        class="btn-secondary"
+                        icon="fa-print"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ── Auto-create binding actions on every install / upgrade ── -->
+    <function model="direct.print.action" name="action_create_print_actions_silent"/>
+
+</odoo>
