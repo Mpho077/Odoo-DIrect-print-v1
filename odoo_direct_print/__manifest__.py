@@ -11,13 +11,13 @@
     "depends": ["product", "account", "sale", "purchase", "stock"],
     "data": [
         "security/ir.model.access.csv",
-        "views/direct_print_views.xml",
+        "views/odoo_direct_print_views.xml",
         "views/label_print_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
-            "direct_print/static/src/js/browser_print_action.js",
-            "direct_print/static/src/js/label_print_action.js",
+            "odoo_direct_print/static/src/js/browser_print_action.js",
+            "odoo_direct_print/static/src/js/label_print_action.js",
         ],
     },
     "images": [
